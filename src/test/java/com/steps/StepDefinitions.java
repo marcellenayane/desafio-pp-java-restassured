@@ -2,6 +2,7 @@ package com.steps;
 
 import com.github.javafaker.Faker;
 import com.utils.PPUtils;
+import cucumber.api.PendingException;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
@@ -81,7 +82,6 @@ public class StepDefinitions {
                     .put(idCode)
                     .then().extract().response();
             System.out.println(response.toString());
-            int size = response.jsonPath().getList("data.id").size();
         }
     }
 
@@ -89,13 +89,24 @@ public class StepDefinitions {
     @And("^the name was really update to \"([^\"]*)\"$")
     public void theNameWasReallyUpdateTo(String newName) throws Throwable {
         Assert.assertFalse(idCode.isEmpty());
-        response = request
-                .contentType("application/json")  //another way to specify content type
-                .header("Authorization", "Bearer 2275e2cbbf8dc1d113b25fb018cdb2e07e088b35bb5f7b7c13ca160ed96a82ba")
-                .when().get(idCode)
-                .then().extract().response();
-        System.out.println(response.toString());
+        response = PPUtils.getUserID(idCode);
+        System.out.println(response.asString());
         Assert.assertEquals(response.jsonPath().getString("data.name"), newName.trim());
+    }
+
+    @When("^I delete the user$")
+    public void iDeleteTheUser() throws Throwable {
+        response = PPUtils.deleteUser(idCode);
+        Assert.assertEquals(200, response.statusCode());
+        Assert.assertEquals("204", response.jsonPath().getString("code"));
+    }
+
+    @And("^the user was really deleted$")
+    public void theUserWasReallyDeleted() {
+        response = PPUtils.getUserID(idCode);
+        Assert.assertEquals(200, response.statusCode());
+        Assert.assertEquals("404", response.jsonPath().getString("code"));
+        Assert.assertEquals("Resource not found", response.jsonPath().getString("data.message"));
     }
 
 }
