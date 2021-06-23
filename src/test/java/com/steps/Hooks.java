@@ -18,7 +18,6 @@ public class Hooks {
     public void beforeScenario(Scenario scenario) {
         RestAssured.baseURI = Hooks.prop.getProperty("baseURI");
         RestAssured.basePath = Hooks.prop.getProperty("basePath");
-        System.out.println("Starting the scenario: " + scenario.getName());
         Hooks.loadProperties(); // lod the properties file
         token = prop.getProperty("authorization");
         urlBase = prop.getProperty("baseURI") + prop.getProperty("basePath");

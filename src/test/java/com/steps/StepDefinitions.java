@@ -39,18 +39,14 @@ public class StepDefinitions {
     @When("^I get all the list from the users$")
     public void iGetAllTheListFromTheUsers() {
         totalUsers = PPUtils.getAllTheList();
-        System.out.println("The initial total: " + totalUsers);
     }
 
     @When("^I create a new user$")
     public void iCreateANewUserWithAnd() {
         response = PPUtils.postUser();
-        System.out.println("RESPONSE DO CREATE USER: " +
-                response.asString());
         Assert.assertEquals(200, response.statusCode());
         Assert.assertEquals("201", response.jsonPath().getString("code"));
         idCode = response.jsonPath().getString("data.id");
-        System.out.println("codeId: " + idCode);
     }
 
 
@@ -66,7 +62,6 @@ public class StepDefinitions {
     public void i_Update_The_Name_Of_TheUserTo(String newName) {
         response = PPUtils.putUser(newName, idCode);
         Assert.assertEquals(200, response.statusCode());
-        System.out.println(response.asString());
     }
 
 
@@ -74,7 +69,6 @@ public class StepDefinitions {
     public void the_NameWas_Really_Update_To(String newName) {
         Assert.assertFalse(idCode.isEmpty());
         response = PPUtils.getUserID(idCode);
-        System.out.println(response.asString());
         Assert.assertEquals(response.jsonPath().getString("data.name"), newName.trim());
     }
 

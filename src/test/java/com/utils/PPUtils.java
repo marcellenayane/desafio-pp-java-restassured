@@ -36,7 +36,6 @@ public class PPUtils {
                 .put("status", "Active");
 
         Response responseCreateUser = request(urlId, jsonObj.toString(),"POST");
-        System.out.println("Response from Post: " + responseCreateUser.asString());
         Assert.assertEquals(200, responseCreateUser.getStatusCode());
         return responseCreateUser;
     }
@@ -44,7 +43,6 @@ public class PPUtils {
     public static Response deleteUser(String userId) {
         Assert.assertFalse(userId.isEmpty());
         String urlId = Hooks.urlBase + userId;
-        System.out.println("URL: " + urlId);
         Response responseDeleteUser = request(urlId, "", "DELETE");
         Assert.assertEquals(200, responseDeleteUser.getStatusCode());
         return responseDeleteUser;
@@ -63,7 +61,6 @@ public class PPUtils {
     public static Response getAllUsers() {
         Response responseAllList = request(Hooks.urlBase, "", "GET");
         Assert.assertEquals("200", responseAllList.jsonPath().getString("code"));
-        System.out.println("The Total is: " + responseAllList.jsonPath().get("meta.pagination.total").toString());
         StepDefinitions.response = responseAllList;
         Assert.assertEquals(200, StepDefinitions.response.getStatusCode());
         return responseAllList;
@@ -72,7 +69,6 @@ public class PPUtils {
     public static String getAllTheList() {
         Response responseAllList = request(Hooks.urlBase, "", "GET");
         Assert.assertEquals("200", responseAllList.jsonPath().getString("code"));
-        System.out.println("The Total is: " + responseAllList.jsonPath().get("meta.pagination.total").toString());
         StepDefinitions.response = responseAllList;
         Assert.assertEquals(200, StepDefinitions.response.getStatusCode());
         return responseAllList.jsonPath().get("meta.pagination.total").toString();
@@ -83,14 +79,12 @@ public class PPUtils {
         requestspecs = setupHeaders("Authorization", Hooks.token);
         response = restAssuredRequest(httpmethod, body, endpoint);
         validaResponse(response);
-        System.out.println("LOG: Response is: " + response.asString());
         return response;
     }
 
     public static void validaResponse(Response restAssuredResponse) {
         Assert.assertNotNull(restAssuredResponse);
         validaResponseCode(200, restAssuredResponse.getStatusCode(), restAssuredResponse);// VALIDA O RESPONSE // CODE
-        System.out.println("LOG: Response is: " + restAssuredResponse.asString());
     }
 
     public static Response restAssuredRequest(String httpMethod, String body, String url) {
