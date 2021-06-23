@@ -1,33 +1,30 @@
 package com.utils;
 
 import com.github.javafaker.Faker;
+import com.steps.Hooks;
 import com.steps.StepDefinitions;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.json.JSONObject;
 import org.junit.Assert;
 
+
 import static io.restassured.RestAssured.given;
 
 public class PPUtils {
 
-    public static String newName;
+    public static io.restassured.specification.RequestSpecification requestspecs;
+    public static Response response;
 
     public static Response getUserID(String userId) {
-        Assert.assertFalse(userId.isEmpty());
-        String url = "https://gorest.co.in/public-api/users/" + userId;
-        Response responseGetUser = RestAssured.given()
-                .header("Authorization", "Bearer 2275e2cbbf8dc1d113b25fb018cdb2e07e088b35bb5f7b7c13ca160ed96a82ba")
-                .when()
-                .get(url)
-                .then()
-                .extract()
-                .response();
+        String urlId = Hooks.urlBase + userId;
+        Response responseGetUser = request(urlId, "", "GET");
         Assert.assertEquals(200, responseGetUser.getStatusCode());
         return responseGetUser;
     }
 
-    public static Response createUser() {
+    public static Response postUser() {
+        String urlId = Hooks.urlBase;
         Faker faker = new Faker();
         String name = faker.name().fullName(); // Miss Samanta Schmidt
         String email = name.replaceAll("\\s+", "") + "@gmail.com"; // Emory
@@ -37,66 +34,101 @@ public class PPUtils {
                 .put("email", email)
                 .put("gender", "Male")
                 .put("status", "Active");
-        Response ResponseCreateUser = given()
-                .header("Authorization", "Bearer 2275e2cbbf8dc1d113b25fb018cdb2e07e088b35bb5f7b7c13ca160ed96a82ba")
-                .header("Content-Type", "application/json")
-                .and()
-                .body(jsonObj.toString())
-                .when()
-                .post("https://gorest.co.in/public-api/users")
-                .then()
-                .extract().response();
-        System.out.println("Response: " + ResponseCreateUser.asString());
-        Assert.assertEquals(200, ResponseCreateUser.getStatusCode());
-        return ResponseCreateUser;
+
+        Response responseCreateUser = request(urlId, jsonObj.toString(),"POST");
+        System.out.println("Response from Post: " + responseCreateUser.asString());
+        Assert.assertEquals(200, responseCreateUser.getStatusCode());
+        return responseCreateUser;
     }
 
     public static Response deleteUser(String userId) {
         Assert.assertFalse(userId.isEmpty());
-        String url = "https://gorest.co.in/public-api/users/" + userId;
-        System.out.println("URL: " + url);
-        Response responseDeleteUser = RestAssured.given()
-                .header("Authorization", "Bearer 2275e2cbbf8dc1d113b25fb018cdb2e07e088b35bb5f7b7c13ca160ed96a82ba")
-                .when()
-                .delete(url)
-                .then()
-                .extract()
-                .response();
+        String urlId = Hooks.urlBase + userId;
+        System.out.println("URL: " + urlId);
+        Response responseDeleteUser = request(urlId, "", "DELETE");
         Assert.assertEquals(200, responseDeleteUser.getStatusCode());
         return responseDeleteUser;
     }
 
     public static Response putUser(String newName, String userId) {
         Assert.assertFalse(userId.isEmpty());
-        String url = "https://gorest.co.in/public-api/users/" + userId;
-
+        String urlId = Hooks.urlBase + userId;
         JSONObject jsonObj = new JSONObject()
                 .put("name", newName);
+        Response responseCreateUser = request(urlId, jsonObj.toString(),"PUT");
+        Assert.assertEquals(200, responseCreateUser.getStatusCode());
+        return responseCreateUser;
+    }
 
-        Response responsePutUser = RestAssured.given()
-                .contentType("application/json")  //another way to specify content type
-                .header("Authorization", "Bearer 2275e2cbbf8dc1d113b25fb018cdb2e07e088b35bb5f7b7c13ca160ed96a82ba")
-                .body(jsonObj.toString())   // use jsonObj toString method
-                .when()
-                .put(url)
-                .then().extract().response();
-        Assert.assertEquals(200, responsePutUser.getStatusCode());
-        return responsePutUser;
+    public static Response getAllUsers() {
+        Response responseAllList = request(Hooks.urlBase, "", "GET");
+        Assert.assertEquals("200", responseAllList.jsonPath().getString("code"));
+        System.out.println("The Total is: " + responseAllList.jsonPath().get("meta.pagination.total").toString());
+        StepDefinitions.response = responseAllList;
+        Assert.assertEquals(200, StepDefinitions.response.getStatusCode());
+        return responseAllList;
     }
 
     public static String getAllTheList() {
-        Response responseAllList = RestAssured.given()
-                .header("Authorization", "Bearer 2275e2cbbf8dc1d113b25fb018cdb2e07e088b35bb5f7b7c13ca160ed96a82ba")
-                .when()
-                .get()
-                .then()
-                .extract()
-                .response();
-        System.out.println(responseAllList.body());
-        Assert.assertEquals(responseAllList.jsonPath().getString("code"), "200");
-        System.out.println("total é: " + responseAllList.jsonPath().get("meta.pagination.total").toString());
+        Response responseAllList = request(Hooks.urlBase, "", "GET");
+        Assert.assertEquals("200", responseAllList.jsonPath().getString("code"));
+        System.out.println("The Total is: " + responseAllList.jsonPath().get("meta.pagination.total").toString());
         StepDefinitions.response = responseAllList;
         Assert.assertEquals(200, StepDefinitions.response.getStatusCode());
         return responseAllList.jsonPath().get("meta.pagination.total").toString();
+    }
+
+
+    public static Response request(String endpoint, String body, String httpmethod){
+        requestspecs = setupHeaders("Authorization", Hooks.token);
+        response = restAssuredRequest(httpmethod, body, endpoint);
+        validaResponse(response);
+        System.out.println("LOG: Response is: " + response.asString());
+        return response;
+    }
+
+    public static void validaResponse(Response restAssuredResponse) {
+        Assert.assertNotNull(restAssuredResponse);
+        validaResponseCode(200, restAssuredResponse.getStatusCode(), restAssuredResponse);// VALIDA O RESPONSE // CODE
+        System.out.println("LOG: Response is: " + restAssuredResponse.asString());
+    }
+
+    public static Response restAssuredRequest(String httpMethod, String body, String url) {
+        Response restAssuredResponse = null;
+        switch (httpMethod.toUpperCase()) {
+            case "GET":
+                restAssuredResponse = requestspecs.get(url);
+                break;
+            case "POST":
+                restAssuredResponse = requestspecs.body(body).post(url);
+                break;
+            case "PUT":
+                restAssuredResponse = requestspecs.body(body).put(url);
+                break;
+            case "DELETE":
+                restAssuredResponse = requestspecs.delete(url);
+                break;
+            default:
+                System.out.println("This method no exist!");
+        }
+        return restAssuredResponse;
+    }
+
+    public static io.restassured.specification.RequestSpecification setupHeaders(String header, String value) {
+        RestAssured.baseURI = Hooks.prop.getProperty("baseURI");
+        RestAssured.basePath = Hooks.prop.getProperty("basePath");
+        io.restassured.specification.RequestSpecification requestspecs = given();
+        requestspecs.log();
+        requestspecs.contentType("application/json");
+        requestspecs.header(header, value);
+        requestspecs.relaxedHTTPSValidation();
+        return requestspecs;
+    }
+
+    public static void validaResponseCode(int expectedHTTPResponseCode, int responseCode, Response response) {
+        if (responseCode != expectedHTTPResponseCode) {
+            Assert.fail("StatusCode expected : " + expectedHTTPResponseCode + " and StatusCode received : "
+                    + responseCode + " are not the same. Response: " + response.prettyPrint());
+        }
     }
 }

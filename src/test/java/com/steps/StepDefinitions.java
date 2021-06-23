@@ -22,8 +22,8 @@ public class StepDefinitions {
 
     @Before
     public void setUp() {
-        RestAssured.baseURI = "https://gorest.co.in/public-api";
-        RestAssured.basePath = "/users/";
+        RestAssured.baseURI = Hooks.prop.getProperty("baseURI");
+        RestAssured.basePath = Hooks.prop.getProperty("basePath");
     }
 
     @Given("^The endpoint is already configured$")
@@ -39,16 +39,16 @@ public class StepDefinitions {
     @When("^I get all the list from the users$")
     public void iGetAllTheListFromTheUsers() {
         totalUsers = PPUtils.getAllTheList();
-        System.out.println("O total inicial é: " + totalUsers);
+        System.out.println("The initial total: " + totalUsers);
     }
 
     @When("^I create a new user$")
     public void iCreateANewUserWithAnd() {
-        response = PPUtils.createUser();
+        response = PPUtils.postUser();
         System.out.println("RESPONSE DO CREATE USER: " +
                 response.asString());
         Assert.assertEquals(200, response.statusCode());
-        Assert.assertEquals(response.jsonPath().getString("code"), "201");
+        Assert.assertEquals("201", response.jsonPath().getString("code"));
         idCode = response.jsonPath().getString("data.id");
         System.out.println("codeId: " + idCode);
     }
@@ -57,8 +57,6 @@ public class StepDefinitions {
     @And("^the list number have been increased$")
     public void theListNumberHaveBeenIncreased() {
         finalTotal = PPUtils.getAllTheList();
-        System.out.println("Total Before: " + totalUsers);
-        System.out.println("Total After: " + finalTotal);
         int inicial = Integer.parseInt(totalUsers);
         int finalT = Integer.parseInt(finalTotal);
         Assert.assertTrue(finalT > inicial);
@@ -94,5 +92,4 @@ public class StepDefinitions {
         Assert.assertEquals("404", response.jsonPath().getString("code"));
         Assert.assertEquals("Resource not found", response.jsonPath().getString("data.message"));
     }
-
 }
