@@ -1,4 +1,4 @@
-# Java test framework:
+# Java Test and Rest Assured:
 
 This is an project to solve the challenge using Java and Rest Assured.
 
