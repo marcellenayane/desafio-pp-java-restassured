@@ -16,7 +16,7 @@ Feature: Validate APIs for PicPay Challenge
     #Alterar o nome deste usuário criado com o endpoint 'Alterar dados do Usuario' e então validar as alterações no endpoint 'Listar um unico Usuario';
   @desafioPP
   Scenario: Update the user created and validate if it was really updated
-    When I update the name of the user to "Daniel Filho"
+    When I update user's name to "Daniel Filho"
     Then I should have the status code "200"
     And the name was really update to "Daniel Filho"
 

@@ -11,16 +11,18 @@ import static io.restassured.RestAssured.given;
 
 public class PPUtils {
 
+    public static String newName;
+
     public static Response getUserID(String userId) {
         Assert.assertFalse(userId.isEmpty());
         String url = "https://gorest.co.in/public-api/users/" + userId;
         Response responseGetUser = RestAssured.given()
-                        .header("Authorization", "Bearer 2275e2cbbf8dc1d113b25fb018cdb2e07e088b35bb5f7b7c13ca160ed96a82ba")
-                        .when()
-                        .get(url)
-                        .then()
-                        .extract()
-                        .response();
+                .header("Authorization", "Bearer 2275e2cbbf8dc1d113b25fb018cdb2e07e088b35bb5f7b7c13ca160ed96a82ba")
+                .when()
+                .get(url)
+                .then()
+                .extract()
+                .response();
         Assert.assertEquals(200, responseGetUser.getStatusCode());
         return responseGetUser;
     }
@@ -64,14 +66,12 @@ public class PPUtils {
         return responseDeleteUser;
     }
 
-    public static Response putUser(String userId) {
+    public static Response putUser(String newName, String userId) {
         Assert.assertFalse(userId.isEmpty());
         String url = "https://gorest.co.in/public-api/users/" + userId;
-        Faker faker = new Faker();
-        String name = faker.name().fullName(); // Miss Samanta Schmidt
 
         JSONObject jsonObj = new JSONObject()
-                .put("name", name);
+                .put("name", newName);
 
         Response responsePutUser = RestAssured.given()
                 .contentType("application/json")  //another way to specify content type
@@ -80,13 +80,12 @@ public class PPUtils {
                 .when()
                 .put(url)
                 .then().extract().response();
-        Assert.assertEquals(200 /*expected value*/, responsePutUser.getStatusCode());
+        Assert.assertEquals(200, responsePutUser.getStatusCode());
         return responsePutUser;
     }
 
     public static String getAllTheList() {
         Response responseAllList = RestAssured.given()
-       // Response responseAllList = StepDefinitions.request
                 .header("Authorization", "Bearer 2275e2cbbf8dc1d113b25fb018cdb2e07e088b35bb5f7b7c13ca160ed96a82ba")
                 .when()
                 .get()

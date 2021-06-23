@@ -1,8 +1,6 @@
 package com.steps;
 
-import com.github.javafaker.Faker;
 import com.utils.PPUtils;
-import cucumber.api.PendingException;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
@@ -11,7 +9,6 @@ import cucumber.api.java.en.When;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
-import org.json.JSONObject;
 import org.junit.Assert;
 
 
@@ -30,12 +27,12 @@ public class StepDefinitions {
     }
 
     @Given("^The endpoint is already configured$")
-    public void the_endpoint_is_already_configured() throws Throwable {
+    public void the_endpoint_is_already_configured() {
         request = RestAssured.given();
     }
 
     @Then("^I should have the status code \"([^\"]*)\"$")
-    public void i_should_have_the_status_code(String statusCode) throws Throwable {
+    public void i_should_have_the_status_code(String statusCode) {
         response.then().statusCode(Integer.parseInt(statusCode));
     }
 
@@ -46,13 +43,12 @@ public class StepDefinitions {
     }
 
     @When("^I create a new user$")
-    public void iCreateANewUserWithAnd() throws Throwable {
+    public void iCreateANewUserWithAnd() {
         response = PPUtils.createUser();
         System.out.println("RESPONSE DO CREATE USER: " +
                 response.asString());
         Assert.assertEquals(200, response.statusCode());
         Assert.assertEquals(response.jsonPath().getString("code"), "201");
-
         idCode = response.jsonPath().getString("data.id");
         System.out.println("codeId: " + idCode);
     }
@@ -66,28 +62,18 @@ public class StepDefinitions {
         int inicial = Integer.parseInt(totalUsers);
         int finalT = Integer.parseInt(finalTotal);
         Assert.assertTrue(finalT > inicial);
-
     }
 
-    @When("^I update the name of the user to \"([^\"]*)\"$")
-    public void iUpdateTheNameOfTheUserTo(String newName) throws Throwable {
-        if (!idCode.isEmpty()) {
-            JSONObject jsonObjNew = new JSONObject()
-                    .put("name", newName);
-            response = request
-                    .contentType("application/json")  //another way to specify content type
-                    .header("Authorization", "Bearer 2275e2cbbf8dc1d113b25fb018cdb2e07e088b35bb5f7b7c13ca160ed96a82ba")
-                    .body(jsonObjNew.toString())   // use jsonObj toString method
-                    .when()
-                    .put(idCode)
-                    .then().extract().response();
-            System.out.println(response.toString());
-        }
+    @When("^I update user's name to \"([^\"]*)\"$")
+    public void i_Update_The_Name_Of_TheUserTo(String newName) {
+        response = PPUtils.putUser(newName, idCode);
+        Assert.assertEquals(200, response.statusCode());
+        System.out.println(response.asString());
     }
 
 
     @And("^the name was really update to \"([^\"]*)\"$")
-    public void theNameWasReallyUpdateTo(String newName) throws Throwable {
+    public void the_NameWas_Really_Update_To(String newName) {
         Assert.assertFalse(idCode.isEmpty());
         response = PPUtils.getUserID(idCode);
         System.out.println(response.asString());
@@ -95,7 +81,7 @@ public class StepDefinitions {
     }
 
     @When("^I delete the user$")
-    public void iDeleteTheUser() throws Throwable {
+    public void iDeleteTheUser() {
         response = PPUtils.deleteUser(idCode);
         Assert.assertEquals(200, response.statusCode());
         Assert.assertEquals("204", response.jsonPath().getString("code"));
