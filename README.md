@@ -1,4 +1,4 @@
-# Java test framework:
+# Java Test and Rest Assured:
 
 This is an project to solve the challenge using Java and Rest Assured.
 
@@ -38,7 +38,7 @@ The tests related to this challenge can be find in "RunnerCucumber.java" file.
 
 ## Tools used:
 - [IntelliJ IDEA](https://www.jetbrains.com/pt-br/idea/ "IntelliJ IDEA")
-- [POSTMAN] (https://www.postman.com/ "POSTMAN")
+- [POSTMAN](https://www.postman.com/ "POSTMAN")
 
 
 ## Libraries and plugins used
